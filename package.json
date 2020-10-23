@@ -1,7 +1,7 @@
 {
   "name": "sass-json",
   "version": "1.0.0",
-  "main": "./src/index.js",
+  "main": "index.js",
   "author": "Rafael Melo",
   "license": "MIT",
   "dependencies": {

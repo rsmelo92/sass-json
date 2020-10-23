@@ -4,6 +4,14 @@ const sass = require('node-sass');
 
 console.log(process.argv);
 
+let scssFilePath
+try {
+  const fileIndex = process.argv.findIndex(arg => arg === '--file');
+  scssFilePath = process.argv[fileIndex+1];
+} catch (error) {
+  console.error(error);  
+}
+
 function handleVariables(variables) {
   return variables.reduce((acc, line) => {
     const [key, value] = line.replace(/ /g, '').split(':');
@@ -19,10 +27,14 @@ function handleVariables(variables) {
   }, {});
 }
 
-function getFileContent(file) {
-  const splittedFile = file.split("/");
-  const fileName = splittedFile[splittedFile.length - 1].replace('_', ''). replace('.scss', '');
+function getFilename(path) {
+  const splittedFile = path.split("/");
+  const fileName = splittedFile[splittedFile.length - 1].replace('_', '').replace('.scss', '');
+  return fileName;
+}
 
+function getFileContent(file) {
+  const fileName = getFilename(file);
   try {
     const data = fs.readFileSync(file, 'utf8')
     // Remove comments, space and newlines from file
@@ -33,18 +45,26 @@ function getFileContent(file) {
     return { [fileName]: variablesJson };
 
   } catch (err) {
-    console.error(err)
+    console.error(err.message)
   }
 }
 
-const fileName = '_variables'; // TODO: Receive file name as argument and handle each
-const filePath = path.resolve(__dirname, `../scss/_${fileName}.scss`);
-const outputPath = path.resolve(__dirname, '../dist/json');
+const filePath = path.resolve(scssFilePath);
+const outputName = getFilename(filePath)
+console.log("filePath",filePath);
+const outputPath = path.resolve(__dirname);
 
 const { stats: { includedFiles } } = sass.renderSync({ file: filePath });
 const content = includedFiles.map(getFileContent).reduce((acc, obj) => ({...acc, ...obj}), {})
 
-fs.mkdirSync(outputPath);
-fs.writeFileSync(`${outputPath}/${fileName}.json`, JSON.stringify(content));
+try {
+  console.log("Creating: ", outputPath);
+  fs.mkdirSync(outputPath);
+} catch {
+  console.log("Folder already exists, skipping...");
+}
 
-console.log("Done! Compiled json to: ", outputPath);
+const output = `${outputPath}/${outputName}.json`;
+fs.writeFileSync(output, JSON.stringify(content));
+
+console.log("Done! Compiled json to:", output);

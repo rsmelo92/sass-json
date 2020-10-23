@@ -1,2 +1,4 @@
 *node_modules
 *.scss
+*.json
+.DS_Store
