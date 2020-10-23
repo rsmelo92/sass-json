@@ -2,8 +2,6 @@ const fs = require('fs')
 const path = require('path');
 const sass = require('node-sass');
 
-console.log(process.argv);
-
 let scssFilePath
 try {
   const fileIndex = process.argv.findIndex(arg => arg === '--file');
@@ -50,16 +48,16 @@ function getFileContent(file) {
 }
 
 const filePath = path.resolve(scssFilePath);
+console.log("filePath: ",filePath);
 const outputName = getFilename(filePath)
-console.log("filePath",filePath);
 const outputPath = path.resolve(__dirname);
 
 const { stats: { includedFiles } } = sass.renderSync({ file: filePath });
 const content = includedFiles.map(getFileContent).reduce((acc, obj) => ({...acc, ...obj}), {})
 
 try {
-  console.log("Creating: ", outputPath);
   fs.mkdirSync(outputPath);
+  console.log("Creating: ", outputPath);
 } catch {
   console.log("Folder already exists, skipping...");
 }
